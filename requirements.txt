@@ -1,0 +1,3 @@
+fastapi[all]
+supabase
+strawberry-graphql[fastapi]
