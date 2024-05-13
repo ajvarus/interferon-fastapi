@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from graphql_server import graphql_app
-from supabase_client import init_supabase
+
+from graphiq import graphql_app
+
+from supabased import SupabaseManager
 
 app = FastAPI()
 app.add_middleware(
@@ -12,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_event_handler("startup", init_supabase)
+app.add_event_handler("startup", SupabaseManager.init)
 app.include_router(graphql_app, prefix="/graphql")
 
 @app.get("/")
