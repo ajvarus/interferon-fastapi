@@ -12,6 +12,7 @@ class SupabaseManager():
         if cls._client is None:
             cls._client = await create_client(supabase_url=SUPABASE_URL,
                                           supabase_key=SUPABASE_KEY)
+        return cls._client
             
     @classmethod
     async def get_client(cls) -> Client:

@@ -7,8 +7,6 @@ from graphiq.types import Thread
 from supabased.queries import FetchThreads
 
 
-
-
 @strawberry.type
 class Query:
     @strawberry.field
