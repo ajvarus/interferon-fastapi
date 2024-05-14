@@ -17,10 +17,15 @@ class KeyGenerator:
             if master_key is not None:
                 cls._master_key = master_key
             else:
-                cls._master_key = cls.generate_key()
+                cls._master_key = cls.__set_master_key()
         
         return cls._instance
     
+    @classmethod
+    def __set_master_key(cls) -> str:
+        key = Fernet.generate_key().decode()
+        return key
+
     @classmethod
     def generate_key(cls) -> str:
         key = Fernet.generate_key().decode()
