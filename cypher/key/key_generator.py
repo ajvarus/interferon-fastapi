@@ -1,6 +1,6 @@
 # /cypher/key/key_generator.py
 
-import secrets
+from cryptography.fernet import Fernet
 
 from typing import Optional, Type, TypeVar
 
@@ -16,17 +16,19 @@ class KeyGenerator:
 
             if master_key is not None:
                 cls._master_key = master_key
-            elif cls._master_key is None:
+            else:
                 cls._master_key = cls.generate_key()
         
         return cls._instance
     
     @classmethod
     def generate_key(cls) -> str:
-        key = secrets.token_hex(16)
+        key = Fernet.generate_key().decode()
         return key
 
     @classmethod
     def get_master_key(cls) -> str:
         return cls._master_key
     
+print(KeyGenerator().get_master_key())
+print(KeyGenerator("arjun").get_master_key())
