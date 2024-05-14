@@ -5,6 +5,8 @@ from graphiq import graphql_app
 
 from supabased import SupabaseManager
 
+from routers.services import password_vault_router
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -16,6 +18,7 @@ app.add_middleware(
 
 app.add_event_handler("startup", SupabaseManager.init)
 app.include_router(graphql_app, prefix="/graphql")
+app.include_router(password_vault_router, prefix="/services")
 
 @app.get("/")
 async def home():

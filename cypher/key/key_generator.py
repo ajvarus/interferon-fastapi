@@ -30,5 +30,4 @@ class KeyGenerator:
     def get_master_key(cls) -> str:
         return cls._master_key
     
-print(KeyGenerator().get_master_key())
-print(KeyGenerator("arjun").get_master_key())
+    
