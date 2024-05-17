@@ -1,4 +1,4 @@
-# models/password.py
+# models/types/password.py
 
 from pydantic import BaseModel
 from typing import Dict

@@ -7,6 +7,8 @@ from supabased import SupabaseManager
 
 from routers.services import password_vault_router
 
+from routers.auth import auth_router
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -16,9 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_event_handler("startup", SupabaseManager.init)
+# app.add_event_handler("startup", SupabaseManager.init)
 app.include_router(graphql_app, prefix="/graphql")
 app.include_router(password_vault_router, prefix="/services")
+app.include_router(auth_router, prefix="/auth")
 
 @app.get("/")
 async def home():

@@ -19,6 +19,6 @@ class SupabaseManager():
         if cls._client is None:
             # Below line of code is being commented for testing queries ONLY.
             # Make necessary changes before commiting.
-            raise Exception("Client not initialised.")
-            # await cls.init()
+            # raise Exception("Client not initialised.")
+            await cls.init()
         return cls._client

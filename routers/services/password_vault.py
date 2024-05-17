@@ -1,4 +1,4 @@
-# /routers/services/encrypt_passwords.py
+# /routers/services/password_vault.py
 
 from fastapi import APIRouter, HTTPException
 
