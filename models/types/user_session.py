@@ -13,8 +13,8 @@ class UserSession(BaseModel):
     token: str | None = None
     supabase_token: str | None = None
     is_active: bool | None = None
-    expiry: datetime | str | None = None
-    last_active: datetime | str | None = None
+    expiry: datetime | str | float | None = None
+    last_active: datetime | str | float | None = None
 
     @classmethod
     async def from_user(cls, user: InterferonUser) -> Self:
@@ -22,5 +22,8 @@ class UserSession(BaseModel):
             user_id = user.user_id,
             supabase_token = user.supabase_token
         )
+
+    def is_default(self) -> bool:
+        return self.model_dump() == UserSession().model_dump()
     
     
