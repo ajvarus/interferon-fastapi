@@ -1,7 +1,9 @@
 
 
 from supabase._async.client import AsyncClient as Client, create_client
-from supabased import SupabaseManager
+
+from fastapi import Depends
+from dependencies.supabase import get_supabase_client
 
 from models.types import SupabaseUser
 
@@ -10,7 +12,7 @@ from models.types import SupabaseUser
 # If successful, returns a User object.
 class FetchUser:
 
-    def __init__(self, supabase_client: SupabaseManager) -> None:
+    def __init__(self, supabase_client: Client = Depends(get_supabase_client)) -> None:
         self._sb: Client = supabase_client
 
     # Supabase: fetch signup response from Users table 

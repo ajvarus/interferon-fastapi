@@ -186,14 +186,22 @@ class UserSessionEngine:
 
     @classmethod
     async def terminate_session(cls, token: str) -> UserSession:
-        payload: JWTPayload
+        payload: JWTPayload = JWTPayload()
         session: UserSession = UserSession()
         _, payload = cls._verify_session(token)
         if not payload.is_default():
-            session: UserSession = await cls._delete_session(user_id=payload.sub,
+            session: UserSession = await cls._retrieve_session(user_id=payload.sub,
                                                              session_id=payload.ssn)
+            if not session.is_default():
+                deleted_session: UserSession = await cls._delete_session(user_id=session.user_id,
+                                                             session_id=session.session_id)
+                deleted_session.supabase_token = session.supabase_token
+                return deleted_session
+                # session: UserSession = await cls._delete_session(user_id=payload.sub,
+                #                                              session_id=payload.ssn)
             # if not session.is_default():
             #     return session
+            return session
         return session
 
     # def refresh_session(self):

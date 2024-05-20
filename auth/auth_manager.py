@@ -1,66 +1,68 @@
+
 from supabased.migrations.auth import CreateAndLoginUser
 from supabased.queries.auth import LoginUser, SignoutUser, FetchUser
 
-from supabase._async.client import AsyncClient as Client, create_client
-
 from models.types import SupabaseUser, InterferonUser, SignUpCredentials
 
-from auth import UserSession
-
 from typing import Self
-
 
 
 class AuthManager:
     
     _instance: Self = None
-    _supabase_client: Client = None
 
-    def __new__(cls, supabase_client: Client) -> Self:
+    def __new__(cls, *args, **kwargs) -> Self:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._supabase_client = supabase_client
-
             return cls._instance
         return cls._instance
     
-    @classmethod
-    async def signup(cls, credentials: SignUpCredentials) -> InterferonUser:
-        supabase_user: SupabaseUser = await CreateAndLoginUser(cls._supabase_client).sign_up(credentials)
+    def __init__(
+            self, 
+            signup_user: CreateAndLoginUser,
+            login_user: LoginUser,
+            signout_user: SignoutUser,
+            fetch_user: FetchUser
+                 ) -> None:
+        if not hasattr(self, '_initialised'):
+            self.signup_user = signup_user
+            self.login_user = login_user
+            self.signout_user = signout_user
+            self.fetch_user = fetch_user
+            self._initialised = True
 
-        if supabase_user.user:
-            intf_user: InterferonUser = await cls.__sb_to_intf_user_conv(supabase_user)
+    
+    async def signup(self, credentials: SignUpCredentials) -> InterferonUser:
+        supabase_user: SupabaseUser = await self.signup_user.sign_up(credentials)
+        if not supabase_user.is_default():
+            intf_user: InterferonUser = AuthManager.__sb_to_intf_user_conv(supabase_user)
             return intf_user
         else:
             return InterferonUser()
 
-    @classmethod
-    async def login(cls, credentials: SignUpCredentials) -> InterferonUser:
-        supabase_user: SupabaseUser = await LoginUser(cls._supabase_client).login_with_password(credentials)
-
-        if supabase_user.user:
-            intf_user: InterferonUser = await cls.__sb_to_intf_user_conv(supabase_user)
+    async def login(self, credentials: SignUpCredentials) -> InterferonUser:
+        supabase_user: SupabaseUser = await self.login_user.login_with_password(credentials)
+        if not supabase_user.is_default():
+            intf_user: InterferonUser = AuthManager.__sb_to_intf_user_conv(supabase_user)
             return intf_user
         else:
             return InterferonUser()
 
-    @classmethod
-    async def logout(cls, jwt: str) -> InterferonUser:
-        supabase_user: SupabaseUser = await SignoutUser(cls._supabase_client).sign_out(jwt=jwt)
+    async def logout(self, jwt: str) -> InterferonUser:
+        supabase_user: SupabaseUser = await self.signout_user.sign_out(jwt=jwt)
         if supabase_user is None:
             return InterferonUser()
         else:
             return InterferonUser(is_active=False)
 
-    @classmethod
-    async def fetch_current_user(cls):
+    async def fetch_current_user(self):
         pass
         # cls._user = await FetchUser(cls._supabase_client).fetch_user()
 
     # The below function is used for converting a Supabase user
     # into a Interferon user
     @staticmethod
-    async def __sb_to_intf_user_conv(supabase_user: SupabaseUser) -> InterferonUser:
+    def __sb_to_intf_user_conv(supabase_user: SupabaseUser) -> InterferonUser:
             try:
                 return InterferonUser(
                     user_id = supabase_user.user.get("id", None),
@@ -71,4 +73,5 @@ class AuthManager:
                 )
             except Exception as e:
                 return InterferonUser() 
+
 

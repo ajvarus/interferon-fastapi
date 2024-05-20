@@ -10,16 +10,12 @@ class CreateAndLoginUser:
 
     def __init__(self, supabase_client: Client) -> None:
         self._sb = supabase_client
-
     # Supabase: fetch signup response from Users table 
     async def sign_up(self, credentials: SignUpCredentials) -> SupabaseUser:
-        
         try:
             signup_response = await self._sb.auth.sign_up(credentials=credentials.model_dump())
-            return SupabaseUser(user=signup_response.user.dict(),
-                         session=signup_response.session.dict())
-        
-
+            return SupabaseUser(user=signup_response.user.model_dump(),
+                         session=signup_response.session.model_dump())
         except Exception as e:
             print(str(e))
             return SupabaseUser()

@@ -1,6 +1,9 @@
 
 from supabase._async.client import AsyncClient as Client, create_client
 
+from fastapi import Depends
+from dependencies.supabase import get_supabase_client
+
 from models.types import SignUpCredentials
 from models.types import SupabaseUser
 
@@ -8,19 +11,18 @@ from models.types import SupabaseUser
 # If successful, returns a User object.
 class LoginUser:
 
-    def __init__(self, supabase_client: Client) -> None:
+    def __init__(self, supabase_client: Client = Depends(get_supabase_client)) -> None:
         self._sb = supabase_client
 
     # Supabase: fetch signup response from Users table 
     async def login_with_password(self, credentials: SignUpCredentials) -> SupabaseUser:
-        
         try:
             login_response = await self._sb.auth.sign_in_with_password(credentials=credentials.model_dump())
-            print(login_response)
-            supabase_user = SupabaseUser(user=login_response.user.dict(),
-                         session=login_response.session.dict())
+            supabase_user = SupabaseUser(
+                                user=login_response.user.model_dump(),
+                                session=login_response.session.model_dump()
+                            )
             return supabase_user
-        
         except Exception as e:
             print(str(e))
             return SupabaseUser()
