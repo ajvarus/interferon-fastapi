@@ -17,7 +17,7 @@ class UserSession(BaseModel):
     last_active: datetime | str | float | None = None
 
     @classmethod
-    async def from_user(cls, user: InterferonUser) -> Self:
+    def from_user(cls, user: InterferonUser) -> Self:
         return cls(
             user_id = user.user_id,
             supabase_token = user.supabase_token if user.is_active else None,

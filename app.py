@@ -3,8 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from graphiq import graphql_app
 
-from supabased import SupabaseManager
-
 from routers.services import password_vault_router
 
 from routers.auth import auth_router

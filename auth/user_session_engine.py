@@ -57,7 +57,7 @@ class UserSessionEngine:
     @classmethod
     async def _create_session(cls, user: InterferonUser) -> UserSession:
         try:
-            user_session: UserSession = await UserSession.from_user(user=user)
+            user_session: UserSession = UserSession.from_user(user=user)
             user_session.session_id = str(uuid.uuid4())
 
             now: datetime = datetime.now(timezone.utc)

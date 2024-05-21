@@ -14,7 +14,6 @@ async def get_auth_session_interface(
         session_engine=se
     )
 
-
 from .auth_manager import test_get_auth_manager
 from .user_session_engine import test_get_user_session_engine
 
@@ -23,7 +22,6 @@ async def test_get_auth_session_interface(
         se: UserSessionEngine = None
 ) -> AuthSessionInterface:
     am = await test_get_auth_manager()
-    print(type(am))
     se = await test_get_user_session_engine()
     return AuthSessionInterface(
         auth_manager=am,
