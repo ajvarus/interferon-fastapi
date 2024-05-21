@@ -12,15 +12,14 @@ from datetime import datetime
 
 router: APIRouter = APIRouter()
 
-# Testing Supabase auth endpoints - start
 
 @router.post("/")
 async def auth(
     ar: AuthRequest, 
     request: Request, 
     response: Response, 
-    token = Cookie(None),
-    asi: AuthSessionInterface = Depends(get_auth_session_interface)
+    asi: AuthSessionInterface = Depends(get_auth_session_interface),
+    token = Cookie(None)
 ) -> UserSession:
     # Handle Signup
     try:
@@ -37,7 +36,7 @@ async def auth(
                     httponly=True,
                     secure=request.url.scheme == "https",
                     max_age=int(float(session.expiry) - datetime.now().timestamp()),
-                    path="/auth"
+                    path="/"
                 )
                 return session
             elif not session.is_default() and session.is_active == False:
@@ -58,7 +57,7 @@ async def auth(
                         httponly=True,
                         secure=request.url.scheme == "https",
                         max_age=int(float(session.expiry) - datetime.now().timestamp()),
-                        path="/auth"
+                        path="/"
                     )
                     return session
             elif not session.is_default() and session.is_active == False:
@@ -70,7 +69,7 @@ async def auth(
             if token is not None:
                 session: UserSession = await asi.logout_and_terminate_session(token)
                 if not session.is_default() and session.is_active == False:
-                    response.delete_cookie(key="token", path="/auth")
+                    response.delete_cookie(key="token", path="/")
                     return session
             return UserSession()
 

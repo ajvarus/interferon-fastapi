@@ -1,6 +1,8 @@
 # /routers/services/password_vault.py
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Security
+
+from dependencies.verify_token import get_verified
 
 from models.types import Passwords
 from models.enums import CipherType
@@ -10,16 +12,16 @@ from features import PasswordEncryptor
 router = APIRouter()
 
 @router.post("/password-vault/")
-def password_vault(request: Passwords):
+async def password_vault(ps: Passwords, verified: None = Security(get_verified)):
     try:
         encryptor = PasswordEncryptor()
 
-        if request.cipher_type == CipherType.ENCRYPT:
-            encrypted_passwords = encryptor.encrypt_passwords(request.passwords)
+        if ps.cipher_type == CipherType.ENCRYPT:
+            encrypted_passwords = encryptor.encrypt_passwords(ps.passwords)
             return encrypted_passwords
         
-        elif request.cipher_type == CipherType.DECRYPT:
-            decrypted_passwords = encryptor.decrypt_passwords(request.passwords)
+        elif ps.cipher_type == CipherType.DECRYPT:
+            decrypted_passwords = encryptor.decrypt_passwords(ps.passwords)
             return decrypted_passwords
         
     except ValueError as e:

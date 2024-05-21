@@ -70,3 +70,18 @@ class AuthSessionInterface:
         except Exception as e:
             pass
         return UserSession()
+    
+    @classmethod
+    async def verify(cls, token: str) -> bool:
+        try:
+            session: UserSession = await cls._se.verify_and_retrieve_session(token)
+            if not session.is_default():
+                if session.is_active:
+                    return True
+                elif session.is_active == False:
+                    await cls._am.logout(session.supabase_token)
+                    return False
+            else:
+                return False
+        except Exception as e:
+            return False

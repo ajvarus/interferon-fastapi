@@ -108,6 +108,7 @@ class UserSessionEngine:
                         return updated_session
                     else:
                         deleted_session: UserSession = await cls._delete_session(user_id, session_id)
+                        deleted_session.supabase_token = session.supabase_token
                         return deleted_session 
                 else: return UserSession()    
             else: return UserSession()     
