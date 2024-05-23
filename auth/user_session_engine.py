@@ -197,6 +197,7 @@ class UserSessionEngine:
                 deleted_session: UserSession = await cls._delete_session(user_id=session.user_id,
                                                              session_id=session.session_id)
                 deleted_session.supabase_token = session.supabase_token
+                deleted_session.intf_user = session.intf_user
                 return deleted_session
                 # session: UserSession = await cls._delete_session(user_id=payload.sub,
                 #                                              session_id=payload.ssn)

@@ -36,6 +36,7 @@ class AuthManager:
         supabase_user: SupabaseUser = await self.signup_user.sign_up(credentials)
         if not supabase_user.is_default():
             intf_user: InterferonUser = AuthManager.__sb_to_intf_user_conv(supabase_user)
+            intf_user.is_new = True
             return intf_user
         else:
             return InterferonUser()
@@ -44,6 +45,7 @@ class AuthManager:
         supabase_user: SupabaseUser = await self.login_user.login_with_password(credentials)
         if not supabase_user.is_default():
             intf_user: InterferonUser = AuthManager.__sb_to_intf_user_conv(supabase_user)
+            intf_user.is_new = False
             return intf_user
         else:
             return InterferonUser()
@@ -53,7 +55,7 @@ class AuthManager:
         if supabase_user is None:
             return InterferonUser()
         else:
-            return InterferonUser(is_active=False)
+            return InterferonUser(is_active=False, is_new=False)
 
     async def fetch_current_user(self):
         pass

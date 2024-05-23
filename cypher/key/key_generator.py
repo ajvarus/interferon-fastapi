@@ -1,5 +1,7 @@
 # /cypher/key/key_generator.py
 
+import os
+
 from cryptography.fernet import Fernet
 
 from typing import Optional, Type, TypeVar
@@ -13,21 +15,18 @@ class KeyGenerator:
     def __new__(cls: Type[T], master_key: Optional[str] = None) -> T:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-
-            if master_key is not None:
-                cls._master_key = master_key
-            else:
-                cls._master_key = cls.__set_master_key()
-        
+            cls._master_key = master_key if master_key is not None else os.environ.get(
+                "APP_SECRET", KeyGenerator.__set_master_key()
+            )
         return cls._instance
     
-    @classmethod
-    def __set_master_key(cls) -> str:
+    @staticmethod
+    def __set_master_key() -> str:
         key = Fernet.generate_key().decode()
         return key
 
-    @classmethod
-    def generate_key(cls) -> str:
+    @staticmethod
+    def generate_key() -> str:
         key = Fernet.generate_key().decode()
         return key
 

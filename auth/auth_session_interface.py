@@ -1,6 +1,9 @@
 
 from .auth_manager import AuthManager
 from .user_session_engine import UserSessionEngine
+from cypher.key import manageuserkey
+
+from dependencies.key_manager import get_key_manager
 
 from models.types import SignUpCredentials, InterferonUser, UserSession
 
@@ -25,28 +28,24 @@ class AuthSessionInterface:
         return cls._instance
 
     @classmethod
+    @manageuserkey(get_key_manager)
     async def signup_and_start_session(cls, credentials: SignUpCredentials) -> UserSession:
-        # Sign up the user with Supabase
         try:
-            print(type(cls._am))
             user: InterferonUser = await cls._am.signup(credentials)
             if not user.is_default():
-                # Start a session for the new user
                 user_session: UserSession = await cls._se.start_session(user)
                 if not user_session.is_default():
                     return user_session
         except Exception as e:
             print(str(e))
-            pass
         return UserSession()
 
     @classmethod
+    @manageuserkey(get_key_manager)
     async def login_and_start_session(cls, credentials: SignUpCredentials) -> UserSession:
-        # Log in the user with Supabase
         try:
             user: InterferonUser = await cls._am.login(credentials)
             if not user.is_default():
-                # Start a session for the authenticated user
                 user_session: UserSession = await cls._se.start_session(user)
                 if not user_session.is_default():
                     return user_session
@@ -56,14 +55,15 @@ class AuthSessionInterface:
         return UserSession()
 
     @classmethod
+    @manageuserkey(get_key_manager)
     async def logout_and_terminate_session(cls, token: str) -> UserSession:
-        # Log out the user from Supabase
         try:
-            # Terminate the user's session
             user_session: UserSession = await cls._se.terminate_session(token)
             if not user_session.is_default():   
-                user: InterferonUser = await cls._am.logout(user_session.supabase_token)
-                if not user.is_default():
+                logged_out_user: InterferonUser = await cls._am.logout(user_session.supabase_token)
+                if not logged_out_user.is_default():
+                    user_session.intf_user.transfer_non_none_values_from(logged_out_user)
+                    user = user_session.intf_user
                     return UserSession.from_user(user)
                 else: return UserSession()
             else: return UserSession()
