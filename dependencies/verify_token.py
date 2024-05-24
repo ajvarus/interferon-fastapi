@@ -2,6 +2,8 @@ from fastapi import Request, Depends, HTTPException, status
 
 from auth import AuthSessionInterface
 
+from models.types import UserSession
+
 from dependencies.auth_session_interface import get_auth_session_interface
 
 async def get_verified(
@@ -14,9 +16,17 @@ async def get_verified(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token provided"
         )
-    is_valid = await asi.verify(token)
-    if not is_valid:
+    session: UserSession = await asi.verify(token)
+
+    if session.is_default():
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
+            detail="Invalid"
         )
+    elif session.is_active == False:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Expired token"
+        )
+    else:
+        return session

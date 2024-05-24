@@ -26,14 +26,14 @@ class KeyManager:
         self._fk = fk
         self._r = r
         self._kg = kg
-        self._ee = ee
+        self._ee = ee.init(kg.get_secret())
 
     async def manage_key_for(self: Self, user: InterferonUser) -> None:
         try:
             if user.is_active:
                 if user.is_new:
                     key = self._kg.generate_key()
-                    encrypted_key = self._ee.encrypt_text(key)
+                    encrypted_key = self._ee.encrypt_text(plaintext=key)
                     is_inserted: bool = await self._ik.insert_user_key(user.user_id, encrypted_key)
                     if is_inserted:
                         await self._r.set(f"{user.user_id}:master_key", encrypted_key)
@@ -57,7 +57,23 @@ class KeyManager:
             print(str(e))
             raise
 
+    async def retrieve_key(self, user_id: str) -> str:
+        key_name: str = f"{user_id}:master_key"
+        key: str = ""
+        try:
+            if (await self._r.exists(key_name)) > 0:
+                encrypted_key_bytes: bytes = await self._r.get(key_name)
+                encrypted_key: str = encrypted_key_bytes.decode()
+                key = self._ee.decrypt_text(encrypted_key)
+                return key
+            else:
+                raise Exception("Failed to retrieve key.")
+        except Exception as e:
+            return key
 
+
+# The below function is a wrapper for key-manager
+# used in AuthSessionInterface 
 from functools import wraps
 from typing import Any, Callable
 

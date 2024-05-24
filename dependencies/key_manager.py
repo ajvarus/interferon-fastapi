@@ -1,3 +1,4 @@
+from fastapi import Depends
 
 from supabased.migrations.auth import InsertUserKey
 from supabased.queries.auth import FetchUserKey
@@ -11,22 +12,18 @@ from .redis import get_redis_client
 
 
 async def get_key_manager(
-        user_key_inserter: InsertUserKey = None,
-        user_key_fetcher: FetchUserKey = None,
-        r: Redis = None,
-        key_generator: KeyGenerator = None,
-        encryption_engine: EncryptionEngine = None
+        user_key_inserter: InsertUserKey = Depends(get_insert_user_key),
+        user_key_fetcher: FetchUserKey = Depends(get_fetch_user_key),
+        r: Redis = Depends(get_redis_client)
 ) -> KeyManager:
-    if user_key_inserter is None:
+    if not isinstance(user_key_inserter, InsertUserKey):
         user_key_inserter = await get_insert_user_key()
-    if user_key_fetcher is None:
+    if not isinstance(user_key_fetcher, FetchUserKey):
         user_key_fetcher = await get_fetch_user_key()
-    if r is None:
+    if not isinstance(r, Redis):
         r = await get_redis_client()
-    if key_generator is None:
-        key_generator = KeyGenerator()
-    if encryption_engine is None:
-        encryption_engine = EncryptionEngine(key_generator)
+    key_generator = KeyGenerator()
+    encryption_engine = EncryptionEngine()
     return KeyManager(
         ik=user_key_inserter,
         fk=user_key_fetcher,
@@ -34,3 +31,10 @@ async def get_key_manager(
         ee=encryption_engine,
         r=r
     )
+
+# async def get_depends_key_manager(
+#     ik: InsertUserKey = Depends(get_insert_user_key),
+#     fk: FetchUserKey = Depends(get_fetch_user_key),
+#     r: Redis = Depends(get_redis_client)
+# ) -> KeyManager:
+#     return await get_key_manager(ik, fk, r)

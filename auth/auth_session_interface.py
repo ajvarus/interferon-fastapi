@@ -77,11 +77,11 @@ class AuthSessionInterface:
             session: UserSession = await cls._se.verify_and_retrieve_session(token)
             if not session.is_default():
                 if session.is_active:
-                    return True
+                    return session
                 elif session.is_active == False:
                     await cls._am.logout(session.supabase_token)
-                    return False
+                    return session
             else:
-                return False
+                return session
         except Exception as e:
-            return False
+            return UserSession()
