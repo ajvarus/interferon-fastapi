@@ -15,6 +15,10 @@ async def get_password_encryptor(
         session: UserSession = Security(get_verified),
         key_manager: KeyManager = Depends(get_key_manager)
 ):
+    if not isinstance(session, UserSession):
+        session = await get_verified()
+    if not isinstance(key_manager, KeyManager):
+        key_manager = await get_key_manager()
     encryption_engine = EncryptionEngine()
     return PasswordEncryptor(
         km=key_manager,
