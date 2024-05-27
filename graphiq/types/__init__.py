@@ -6,4 +6,5 @@ from .passwords import (
     PasswordRequest,
     PasswordResponse,
     PasswordFetchResponse,
+    PasswordCacheResponse,
 )

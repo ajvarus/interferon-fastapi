@@ -1,4 +1,3 @@
-
 from .auth_manager import AuthManager
 from .user_session_engine import UserSessionEngine
 from cypher.key import manageuserkey
@@ -17,10 +16,8 @@ class AuthSessionInterface:
     _se: UserSessionEngine = None
 
     def __new__(
-            cls, 
-            auth_manager: AuthManager,
-            session_engine: UserSessionEngine
-            ) -> Self:
+        cls, auth_manager: AuthManager, session_engine: UserSessionEngine
+    ) -> Self:
         if cls._instance == None:
             cls._instance = super().__new__(cls)
             cls._am = auth_manager
@@ -29,7 +26,9 @@ class AuthSessionInterface:
 
     @classmethod
     @manageuserkey(get_key_manager)
-    async def signup_and_start_session(cls, credentials: SignUpCredentials) -> UserSession:
+    async def signup_and_start_session(
+        cls, credentials: SignUpCredentials
+    ) -> UserSession:
         try:
             user: InterferonUser = await cls._am.signup(credentials)
             if not user.is_default():
@@ -42,7 +41,9 @@ class AuthSessionInterface:
 
     @classmethod
     @manageuserkey(get_key_manager)
-    async def login_and_start_session(cls, credentials: SignUpCredentials) -> UserSession:
+    async def login_and_start_session(
+        cls, credentials: SignUpCredentials
+    ) -> UserSession:
         try:
             user: InterferonUser = await cls._am.login(credentials)
             if not user.is_default():
@@ -59,18 +60,24 @@ class AuthSessionInterface:
     async def logout_and_terminate_session(cls, token: str) -> UserSession:
         try:
             user_session: UserSession = await cls._se.terminate_session(token)
-            if not user_session.is_default():   
-                logged_out_user: InterferonUser = await cls._am.logout(user_session.supabase_token)
+            if not user_session.is_default():
+                logged_out_user: InterferonUser = await cls._am.logout(
+                    user_session.supabase_token
+                )
                 if not logged_out_user.is_default():
-                    user_session.intf_user.transfer_non_none_values_from(logged_out_user)
+                    user_session.intf_user.transfer_non_none_values_from(
+                        logged_out_user
+                    )
                     user = user_session.intf_user
                     return UserSession.from_user(user)
-                else: return UserSession()
-            else: return UserSession()
+                else:
+                    return UserSession()
+            else:
+                return UserSession()
         except Exception as e:
             pass
         return UserSession()
-    
+
     @classmethod
     async def verify(cls, token: str) -> bool:
         try:

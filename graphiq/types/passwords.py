@@ -30,3 +30,9 @@ class PasswordFetchResponse:
     id: strawberry.ID
     password_name: str
     decrypted_password: str
+
+
+@strawberry.type
+class PasswordCacheResponse:
+    id: strawberry.ID
+    decrypted_password: str

@@ -12,6 +12,8 @@ from features import PasswordEncryptor
 
 from typing import List
 
+from models.enums import OpType
+
 
 @strawberry.type
 class Mutation:
@@ -62,14 +64,17 @@ class Mutation:
                     .get("insertIntopasswordsCollection")
                     .get("records")
                 ):
-                    return [
-                        PasswordResponse(
-                            id=p.get("id"),
-                            password_name=p.get("password_name"),
-                            encrypted_password=p.get("encrypted_password"),
-                        )
-                        for p in inserted_passwords
-                    ]
+                    if is_added_to_cache := await encryptor.cache_passwords(
+                        inserted_passwords, OpType.ADD
+                    ):
+                        return [
+                            PasswordResponse(
+                                id=p.get("id"),
+                                password_name=p.get("password_name"),
+                                encrypted_password=p.get("encrypted_password"),
+                            )
+                            for p in inserted_passwords
+                        ]
             else:
                 raise HTTPException(
                     status_code=400,
