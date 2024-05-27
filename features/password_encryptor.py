@@ -48,6 +48,13 @@ class PasswordEncryptor:
                 )
         return encrypted_passwords
 
+    async def encrypt_single_password(self, password: str) -> str:
+        if self.encryptor is None:
+            await self._initialise()
+        if password:
+            encrypted_password: str = self.encryptor.encrypt_text(password)
+        return encrypted_password
+
     async def decrypt_passwords(
         self, passwords: List[Dict[str, str]]
     ) -> List[Dict[str, str]]:
@@ -82,6 +89,11 @@ class PasswordEncryptor:
             if op_type == OpType.ADD:
                 is_added: bool = await self.add_to_cache(passwords, redis_key)
                 return is_added
+            if op_type == OpType.UPDATE:
+                is_updated: bool = await self.update_password_in_cache(
+                    passwords, redis_key
+                )
+                return is_updated
         else:
             if op_type == OpType.WRITE:
                 is_written: bool = await self.write_to_cache(passwords, redis_key)
@@ -110,6 +122,17 @@ class PasswordEncryptor:
                 p.get("id"): p.get("encrypted_password") for p in passwords
             }
             await self.r.hset(key, mapping=password_mapping)
+            return True
+        except Exception as e:
+            return False
+
+    async def update_password_in_cache(self, passwords: List[Dict], key: str) -> bool:
+        try:
+            password_mapping = {
+                p.get("id"): p.get("encrypted_password") for p in passwords
+            }
+            await self.r.hset(key, mapping=password_mapping)
+            print((await self.r.hkeys(key)))
             return True
         except Exception as e:
             return False

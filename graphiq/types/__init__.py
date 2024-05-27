@@ -7,4 +7,5 @@ from .passwords import (
     PasswordResponse,
     PasswordFetchResponse,
     PasswordCacheResponse,
+    PasswordUpdateInput,
 )
