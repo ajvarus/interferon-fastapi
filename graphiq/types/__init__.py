@@ -8,4 +8,5 @@ from .passwords import (
     PasswordFetchResponse,
     PasswordCacheResponse,
     PasswordUpdateInput,
+    PasswordDeleteInput,
 )

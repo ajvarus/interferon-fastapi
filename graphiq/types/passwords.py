@@ -50,3 +50,9 @@ class PasswordUpdateInput:
     id: strawberry.ID
     password_name: str
     password: str
+
+
+@strawberry.input
+class PasswordDeleteInput:
+    id: strawberry.ID
+    password_name: str

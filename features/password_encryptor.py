@@ -85,15 +85,22 @@ class PasswordEncryptor:
     async def cache_passwords(self, passwords: List[Dict], op_type: OpType) -> bool:
         redis_key: str = f"{self.user_id}:passwords"
         cache_exists = await self.r.exists(redis_key) == 1
+
+        if op_type == OpType.ADD:
+            is_added: bool = await self.add_to_cache(passwords, redis_key)
+            return is_added
         if cache_exists:
-            if op_type == OpType.ADD:
-                is_added: bool = await self.add_to_cache(passwords, redis_key)
-                return is_added
             if op_type == OpType.UPDATE:
                 is_updated: bool = await self.update_password_in_cache(
                     passwords, redis_key
                 )
                 return is_updated
+            if op_type == OpType.DELETE:
+                password_ids: List[str] = [p.get("id") for p in passwords]
+                is_deleted: bool = await self.delte_from_cache(
+                    key=redis_key, password_ids=password_ids
+                )
+                return is_deleted
         else:
             if op_type == OpType.WRITE:
                 is_written: bool = await self.write_to_cache(passwords, redis_key)
@@ -133,6 +140,13 @@ class PasswordEncryptor:
             }
             await self.r.hset(key, mapping=password_mapping)
             print((await self.r.hkeys(key)))
+            return True
+        except Exception as e:
+            return False
+
+    async def delte_from_cache(self, key: str, password_ids: List[str]) -> bool:
+        try:
+            await self.r.hdel(key, *password_ids)
             return True
         except Exception as e:
             return False

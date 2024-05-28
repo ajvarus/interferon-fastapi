@@ -8,6 +8,7 @@ from graphiq.queries import FetchPasswordsQuery
 
 from graphiq.mutations import StorePasswordsMutation
 from graphiq.mutations import UpdatePasswordsMutation
+from graphiq.mutations import DeletePasswordsMutation
 
 from graphiq.contexts.graphql_context import get_graphql_context
 
@@ -18,7 +19,9 @@ class Query(ThreadQuery, FetchPasswordsQuery):
 
 
 @strawberry.type
-class Mutation(StorePasswordsMutation, UpdatePasswordsMutation):
+class Mutation(
+    StorePasswordsMutation, UpdatePasswordsMutation, DeletePasswordsMutation
+):
     pass
 
 
