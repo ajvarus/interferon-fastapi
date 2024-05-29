@@ -30,11 +30,13 @@ pydantic-extra-types==2.7.0
 pydantic-settings==2.2.1
 pydantic_core==2.18.2
 Pygments==2.18.0
+PyJWT==2.8.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-multipart==0.0.9
 PyYAML==6.0.1
 realtime==1.0.4
+redis==5.0.4
 rich==13.7.1
 shellingham==1.5.4
 six==1.16.0
