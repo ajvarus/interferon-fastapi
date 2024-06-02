@@ -89,22 +89,25 @@ class PasswordEncryptor:
         if op_type == OpType.ADD:
             is_added: bool = await self.add_to_cache(passwords, redis_key)
             return is_added
-        if cache_exists:
+        elif op_type == OpType.WRITE:
+            is_written: bool = await self.write_to_cache(passwords, redis_key)
+            return is_written
+        elif cache_exists:
             if op_type == OpType.UPDATE:
                 is_updated: bool = await self.update_password_in_cache(
                     passwords, redis_key
                 )
                 return is_updated
-            if op_type == OpType.DELETE:
+            elif op_type == OpType.DELETE:
                 password_ids: List[str] = [p.get("id") for p in passwords]
                 is_deleted: bool = await self.delte_from_cache(
                     key=redis_key, password_ids=password_ids
                 )
                 return is_deleted
+            else:
+                return False
         else:
-            if op_type == OpType.WRITE:
-                is_written: bool = await self.write_to_cache(passwords, redis_key)
-                return is_written
+            return False
 
     async def add_to_cache(self, passwords: List[Dict], key: str) -> bool:
         try:
