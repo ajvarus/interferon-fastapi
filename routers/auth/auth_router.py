@@ -34,7 +34,8 @@ async def auth(
                     value=session.token,
                     httponly=True,
                     samesite="none",
-                    secure=request.url.scheme == "https",
+                    secure=False,
+                    # secure=request.url.scheme == "https",
                     max_age=int(float(session.expiry) - datetime.now().timestamp()),
                     path="/",
                 )
@@ -55,7 +56,8 @@ async def auth(
                     value=session.token,
                     httponly=True,
                     samesite="none",
-                    secure=request.url.scheme == "https",
+                    secure=False,
+                    # secure=request.url.scheme == "https",
                     max_age=int(float(session.expiry) - datetime.now().timestamp()),
                     path="/",
                 )
