@@ -15,10 +15,11 @@ async def get_verified(
     # credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     asi: AuthSessionInterface = Depends(get_auth_session_interface),
 ) -> None:
+    token: str = None
     auth_header: str = request.headers.get("Authorization", None)
-    token: str = auth_header.split("Bearer ")[-1] if "Bearer " in auth_header else None
+    if auth_header:
+        token = auth_header.split("Bearer ")[-1] if "Bearer " in auth_header else None
     # token: str = credentials.credentials
-    req_method = request.method
     url_path = request.url.path
     if url_path == "/graphql" and not token:
         return None
