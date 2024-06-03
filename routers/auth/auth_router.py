@@ -82,3 +82,19 @@ async def auth(
     except Exception as e:
         print(str(e))
         return UserSession()
+
+
+@router.post("/signout")
+async def signout(
+    token: str,
+    asi: AuthSessionInterface = Depends(get_auth_session_interface),
+) -> UserSession:
+    try:
+        if token:
+            session: UserSession = await asi.logout_and_terminate_session(token)
+            if not session.is_default() and session.is_active == False:
+                return session
+        return UserSession()
+    except Exception as e:
+        print(str(e))
+        return UserSession()
