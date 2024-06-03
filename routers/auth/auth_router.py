@@ -1,6 +1,6 @@
 # /routers/auth/auth.py
 
-from fastapi import APIRouter, Request, Response, Cookie, Depends
+from fastapi import APIRouter, Request, Depends
 
 from models.enums import AuthType
 from models.types import AuthRequest, SignUpCredentials, UserSession
@@ -10,6 +10,8 @@ from auth import AuthSessionInterface
 
 from datetime import datetime
 
+from typing import Optional
+
 router: APIRouter = APIRouter()
 
 
@@ -17,9 +19,7 @@ router: APIRouter = APIRouter()
 async def auth(
     ar: AuthRequest,
     request: Request,
-    response: Response,
     asi: AuthSessionInterface = Depends(get_auth_session_interface),
-    token=Cookie(None),
 ) -> UserSession:
     # Handle Signup
     try:
@@ -29,16 +29,15 @@ async def auth(
             )
             session: UserSession = await asi.signup_and_start_session(credentials)
             if not session.is_default() and session.is_active:
-                response.set_cookie(
-                    key="token",
-                    value=session.token,
-                    httponly=True,
-                    samesite="none",
-                    secure=False,
-                    # secure=request.url.scheme == "https",
-                    max_age=int(float(session.expiry) - datetime.now().timestamp()),
-                    path="/",
-                )
+                # Commenting to test Authorization header
+                # response.set_cookie(
+                #     key="token",
+                #     value=session.token,
+                #     httponly=True,
+                #     secure=request.url.scheme == "https",
+                #     max_age=int(float(session.expiry) - datetime.now().timestamp()),
+                #     path="/",
+                # )
                 return session
             elif not session.is_default() and session.is_active == False:
                 return session
@@ -51,16 +50,15 @@ async def auth(
             )
             session: UserSession = await asi.login_and_start_session(credentials)
             if not session.is_default() and session.is_active:
-                response.set_cookie(
-                    key="token",
-                    value=session.token,
-                    httponly=True,
-                    samesite="none",
-                    secure=False,
-                    # secure=request.url.scheme == "https",
-                    max_age=int(float(session.expiry) - datetime.now().timestamp()),
-                    path="/",
-                )
+                # Commenting to test Authorization header
+                # response.set_cookie(
+                #     key="token",
+                #     value=session.token,
+                #     httponly=True,
+                #     secure=request.url.scheme == "https",
+                #     max_age=int(float(session.expiry) - datetime.now().timestamp()),
+                #     path="/",
+                # )
                 return session
             elif not session.is_default() and session.is_active == False:
                 return session
@@ -68,11 +66,19 @@ async def auth(
 
         # Handle Signout
         if ar.auth_type == AuthType.SIGNOUT:
-            if token is not None:
-                session: UserSession = await asi.logout_and_terminate_session(token)
-                if not session.is_default() and session.is_active == False:
-                    response.delete_cookie(key="token", path="/")
-                    return session
+            if auth_header := request.headers.get("Authorization"):
+                print(request.headers)
+                if token := (
+                    auth_header.split("Bearer ")[-1]
+                    if "Bearer " in auth_header
+                    else None
+                ):
+                    print(token)
+                    session: UserSession = await asi.logout_and_terminate_session(token)
+                    if not session.is_default() and session.is_active == False:
+                        # Commenting to test Authorization header
+                        # response.delete_cookie(key="token", path="/")
+                        return session
             return UserSession()
 
     except Exception as e:
