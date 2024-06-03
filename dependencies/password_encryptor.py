@@ -1,6 +1,6 @@
 # /dependencies/password_encryptor.py
 
-from fastapi import Depends, Security
+from fastapi import Depends, Security, Request
 from redis import Redis
 
 from .key_manager import get_key_manager
@@ -15,17 +15,21 @@ from models.types import UserSession
 
 
 async def get_password_encryptor(
+    request: Request,
     session: UserSession = Security(get_verified),
     key_manager: KeyManager = Depends(get_key_manager),
     r: Redis = Depends(get_redis_client),
 ):
     if not isinstance(session, UserSession):
-        session = await get_verified()
+        session = await get_verified(request)
     if not isinstance(key_manager, KeyManager):
         key_manager = await get_key_manager()
     if not isinstance(r, Redis):
         r = await get_redis_client()
     encryption_engine = EncryptionEngine()
     return PasswordEncryptor(
-        km=key_manager, ee=encryption_engine, user_id=session.user_id, r=r
+        km=key_manager,
+        ee=encryption_engine,
+        user_id=session.user_id if session else "",
+        r=r,
     )

@@ -12,11 +12,16 @@ bearer_scheme = HTTPBearer()
 
 async def get_verified(
     request: Request,
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    # credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     asi: AuthSessionInterface = Depends(get_auth_session_interface),
 ) -> None:
-    token: str = credentials.credentials
-    print(f"Token: {token}")
+    auth_header: str = request.headers.get("Authorization", None)
+    token: str = auth_header.split("Bearer ")[-1] if "Bearer " in auth_header else None
+    # token: str = credentials.credentials
+    req_method = request.method
+    url_path = request.url.path
+    if url_path == "/graphql" and not token:
+        return None
     # Commenting out to test Authorization header based verification
     # token: str = request.cookies.get("token")
     if not token:

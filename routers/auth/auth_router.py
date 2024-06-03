@@ -67,13 +67,11 @@ async def auth(
         # Handle Signout
         if ar.auth_type == AuthType.SIGNOUT:
             if auth_header := request.headers.get("Authorization"):
-                print(request.headers)
                 if token := (
                     auth_header.split("Bearer ")[-1]
                     if "Bearer " in auth_header
                     else None
                 ):
-                    print(token)
                     session: UserSession = await asi.logout_and_terminate_session(token)
                     if not session.is_default() and session.is_active == False:
                         # Commenting to test Authorization header

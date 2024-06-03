@@ -1,5 +1,4 @@
-
-from fastapi import Depends, Security
+from fastapi import Depends, Security, Request
 from supabase._async.client import AsyncClient as Client
 
 from dependencies.password_encryptor import get_password_encryptor
@@ -12,13 +11,15 @@ from features import PasswordEncryptor
 
 from typing import Dict
 
+
+# Commenting to test - DO NOT MODIFY
 async def get_graphql_context(
     session: UserSession = Security(get_verified),
     client: Client = Depends(get_supabase_graphql_client),
-    encryptor: PasswordEncryptor = Depends(get_password_encryptor)
+    encryptor: PasswordEncryptor = Depends(get_password_encryptor),
 ) -> Dict[str, any]:
     return {
-        "user_id": session.user_id,
-        "client": client, 
-        "encryptor": encryptor
+        "user_id": session.user_id if session else "",
+        "client": client,
+        "encryptor": encryptor,
     }
