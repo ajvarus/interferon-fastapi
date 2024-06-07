@@ -79,6 +79,7 @@ async def signout(
         if token:
             session: UserSession = await asi.logout_and_terminate_session(token)
             if not session.is_default() and session.is_active == False:
+                print(session)
                 return session
         return UserSession()
     except Exception as e:
