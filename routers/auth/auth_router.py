@@ -1,6 +1,7 @@
 # /routers/auth/auth.py
 
 from fastapi import APIRouter, Request, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from models.enums import AuthType
 from models.types import AuthRequest, SignUpCredentials, UserSession
@@ -10,9 +11,10 @@ from auth import AuthSessionInterface
 
 from datetime import datetime
 
-from typing import Optional
+from typing import Annotated
 
 router: APIRouter = APIRouter()
+bearer_scheme: HTTPBearer = HTTPBearer()
 
 
 @router.post("/")
@@ -29,15 +31,6 @@ async def auth(
             )
             session: UserSession = await asi.signup_and_start_session(credentials)
             if not session.is_default() and session.is_active:
-                # Commenting to test Authorization header
-                # response.set_cookie(
-                #     key="token",
-                #     value=session.token,
-                #     httponly=True,
-                #     secure=request.url.scheme == "https",
-                #     max_age=int(float(session.expiry) - datetime.now().timestamp()),
-                #     path="/",
-                # )
                 return session
             elif not session.is_default() and session.is_active == False:
                 return session
@@ -50,15 +43,6 @@ async def auth(
             )
             session: UserSession = await asi.login_and_start_session(credentials)
             if not session.is_default() and session.is_active:
-                # Commenting to test Authorization header
-                # response.set_cookie(
-                #     key="token",
-                #     value=session.token,
-                #     httponly=True,
-                #     secure=request.url.scheme == "https",
-                #     max_age=int(float(session.expiry) - datetime.now().timestamp()),
-                #     path="/",
-                # )
                 return session
             elif not session.is_default() and session.is_active == False:
                 return session
@@ -86,9 +70,11 @@ async def auth(
 
 @router.post("/signout")
 async def signout(
-    token: str,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(bearer_scheme)],
     asi: AuthSessionInterface = Depends(get_auth_session_interface),
 ) -> UserSession:
+    token: str = credentials.credentials
+    print(token)
     try:
         if token:
             session: UserSession = await asi.logout_and_terminate_session(token)
