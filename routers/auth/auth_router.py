@@ -49,19 +49,19 @@ async def auth(
             return UserSession()
 
         # Handle Signout
-        if ar.auth_type == AuthType.SIGNOUT:
-            if auth_header := request.headers.get("Authorization"):
-                if token := (
-                    auth_header.split("Bearer ")[-1]
-                    if "Bearer " in auth_header
-                    else None
-                ):
-                    session: UserSession = await asi.logout_and_terminate_session(token)
-                    if not session.is_default() and session.is_active == False:
-                        # Commenting to test Authorization header
-                        # response.delete_cookie(key="token", path="/")
-                        return session
-            return UserSession()
+        # if ar.auth_type == AuthType.SIGNOUT:
+        #     if auth_header := request.headers.get("Authorization"):
+        #         if token := (
+        #             auth_header.split("Bearer ")[-1]
+        #             if "Bearer " in auth_header
+        #             else None
+        #         ):
+        #             session: UserSession = await asi.logout_and_terminate_session(token)
+        #             if not session.is_default() and session.is_active == False:
+        #                 # Commenting to test Authorization header
+        #                 # response.delete_cookie(key="token", path="/")
+        #                 return session
+        #     return UserSession()
 
     except Exception as e:
         print(str(e))
