@@ -12,6 +12,7 @@ app = FastAPI()
 origins = [
     "http://localhost",
     "http://localhost:8080",
+    "https://interferon-svelte.onrender.com/",
 ]
 
 app.add_middleware(
