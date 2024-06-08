@@ -26,6 +26,21 @@ class AuthSessionInterface:
 
     @classmethod
     @manageuserkey(get_key_manager)
+    async def resolve_and_start_session(
+        cls, credentials: SignUpCredentials
+    ) -> UserSession:
+        try:
+            user: InterferonUser = await cls._am.resolve(credentials)
+            if not user.is_default():
+                user_session: UserSession = await cls._se.start_session(user)
+                if not user_session.is_default():
+                    return user_session
+        except Exception as e:
+            print(str(e))
+        return UserSession()
+
+    @classmethod
+    @manageuserkey(get_key_manager)
     async def signup_and_start_session(
         cls, credentials: SignUpCredentials
     ) -> UserSession:

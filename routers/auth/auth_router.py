@@ -25,6 +25,17 @@ async def auth(
 ) -> UserSession:
     # Handle Signup
     try:
+        if ar.auth_type == AuthType.RESOLVE:
+            credentials: SignUpCredentials = SignUpCredentials(
+                email=ar.email, password=ar.password
+            )
+            session: UserSession = await asi.resolve_and_start_session(credentials)
+            if not session.is_default() and session.is_active:
+                return session
+            elif not session.is_default() and session.is_active == False:
+                return session
+            return UserSession()
+
         if ar.auth_type == AuthType.SIGNUP:
             credentials: SignUpCredentials = SignUpCredentials(
                 email=ar.email, password=ar.password
