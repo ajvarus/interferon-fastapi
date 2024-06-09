@@ -60,10 +60,11 @@ class Query:
                         )
                     return decrypted_passwords
             else:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Failed to retrieve passwords from database.",
-                )
+                return []
+                # raise HTTPException(
+                #     status_code=400,
+                #     detail="Failed to retrieve passwords from database.",
+                # )
         except Exception as e:
             return HTTPException(status_code=401, detail=f"Application error: {str(e)}")
 
