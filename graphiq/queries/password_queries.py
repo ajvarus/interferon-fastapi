@@ -31,6 +31,7 @@ class Query:
                             node {
                                 id
                                 password_name
+                                username
                                 encrypted_password
                             }
                         }

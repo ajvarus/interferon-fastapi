@@ -43,6 +43,7 @@ class PasswordEncryptor:
                     PasswordRequest(
                         user_id=self.user_id,
                         password_name=p.password_name,
+                        username=p.username,
                         encrypted_password=encrypted_password,
                     )
                 )
@@ -70,6 +71,7 @@ class PasswordEncryptor:
                     PasswordFetchResponse(
                         id=p.get("id"),
                         password_name=p.get("password_name"),
+                        username=p.get("username"),
                         decrypted_password=decrypted_password,
                     )
                 )

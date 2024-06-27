@@ -2,12 +2,11 @@
 
 import strawberry
 
-from pydantic import BaseModel
-
 
 @strawberry.input
 class PasswordInput:
     password_name: str
+    username: str
     password: str
 
 
@@ -15,6 +14,7 @@ class PasswordInput:
 class PasswordRequest:
     user_id: str
     password_name: str
+    username: str
     encrypted_password: str
 
 
@@ -22,6 +22,7 @@ class PasswordRequest:
 class PasswordResponse:
     id: strawberry.ID
     password_name: str
+    username: str
     encrypted_password: str
 
     def to_dict(self) -> dict:
@@ -36,6 +37,7 @@ class PasswordResponse:
 class PasswordFetchResponse:
     id: strawberry.ID
     password_name: str
+    username: str
     decrypted_password: str
 
 

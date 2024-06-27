@@ -35,6 +35,7 @@ class Mutation:
                         records {
                             id
                             password_name
+                            username
                             encrypted_password
                         }
                     }
@@ -48,6 +49,7 @@ class Mutation:
                     {
                         "user_id": ep.user_id,
                         "password_name": ep.password_name,
+                        "username": ep.username,
                         "encrypted_password": ep.encrypted_password,
                     }
                     for ep in encrypted_passwords
@@ -71,6 +73,7 @@ class Mutation:
                             PasswordResponse(
                                 id=p.get("id"),
                                 password_name=p.get("password_name"),
+                                username=p.get("username"),
                                 encrypted_password=p.get("encrypted_password"),
                             )
                             for p in inserted_passwords
