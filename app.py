@@ -12,7 +12,7 @@ app = FastAPI()
 origins = [
     "http://localhost",
     "http://localhost:8080",
-    "https://interferon-svelte.onrender.com",
+    "https://interferon-live.onrender.com",
 ]
 
 app.add_middleware(
@@ -23,7 +23,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.add_event_handler("startup", SupabaseManager.init)
 app.include_router(graphql_app, prefix="/graphql")
 app.include_router(password_vault_router, prefix="/services")
 app.include_router(auth_router, prefix="/auth")
