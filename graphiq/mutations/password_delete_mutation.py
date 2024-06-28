@@ -72,6 +72,7 @@ class Mutation:
                         PasswordResponse(
                             id=p.get("id"),
                             password_name=p.get("password_name"),
+                            username="",
                             encrypted_password="",
                         )
                         for p in deleted_passwords
