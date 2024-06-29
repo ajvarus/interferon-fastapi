@@ -7,11 +7,12 @@ from models.enums import AuthType
 from models.types import AuthRequest, SignUpCredentials, UserSession
 
 from dependencies.auth_session_interface import get_auth_session_interface
+from dependencies.supabase_auth import get_user_existence_checker
+
 from auth import AuthSessionInterface
+from supabased.queries.auth import UserExistenceChecker
 
-from datetime import datetime
-
-from typing import Annotated
+from typing import Annotated, Optional
 
 router: APIRouter = APIRouter()
 bearer_scheme: HTTPBearer = HTTPBearer()
@@ -59,21 +60,6 @@ async def auth(
                 return session
             return UserSession()
 
-        # Handle Signout
-        # if ar.auth_type == AuthType.SIGNOUT:
-        #     if auth_header := request.headers.get("Authorization"):
-        #         if token := (
-        #             auth_header.split("Bearer ")[-1]
-        #             if "Bearer " in auth_header
-        #             else None
-        #         ):
-        #             session: UserSession = await asi.logout_and_terminate_session(token)
-        #             if not session.is_default() and session.is_active == False:
-        #                 # Commenting to test Authorization header
-        #                 # response.delete_cookie(key="token", path="/")
-        #                 return session
-        #     return UserSession()
-
     except Exception as e:
         print(str(e))
         return UserSession()
@@ -85,7 +71,6 @@ async def signout(
     asi: AuthSessionInterface = Depends(get_auth_session_interface),
 ) -> UserSession:
     token: str = credentials.credentials
-    print(token)
     try:
         if token:
             session: UserSession = await asi.logout_and_terminate_session(token)
@@ -96,3 +81,14 @@ async def signout(
     except Exception as e:
         print(str(e))
         return UserSession()
+
+
+@router.post("/exists")
+async def exists(
+    uec: Annotated[UserExistenceChecker, Depends(get_user_existence_checker)],
+    email: str,
+) -> Optional[bool]:
+    try:
+        return await uec.check_if_user_exists(email)
+    except:
+        return

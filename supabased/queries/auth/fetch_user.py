@@ -1,3 +1,5 @@
+# /supabase/queries/auth/fetch_user.py
+
 from supabase._async.client import AsyncClient as Client
 from gotrue.errors import AuthApiError
 
@@ -29,11 +31,9 @@ class FetchUser:
                 existed,
             )
         except AuthApiError as e:
-            print(str(e))
             if e.status == 422:
                 existed = True
                 return SupabaseUser(), existed
             return SupabaseUser()
         except Exception as e:
-            print(str(e))
             return SupabaseUser(), None
