@@ -2,9 +2,10 @@
 
 from fastapi import APIRouter, Request, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import EmailStr
 
 from models.enums import AuthType
-from models.types import AuthRequest, SignUpCredentials, UserSession
+from models.types import AuthRequest, SignUpCredentials, UserSession, Email
 
 from dependencies.auth_session_interface import get_auth_session_interface
 from dependencies.supabase_auth import get_user_existence_checker
@@ -86,9 +87,9 @@ async def signout(
 @router.post("/exists")
 async def exists(
     uec: Annotated[UserExistenceChecker, Depends(get_user_existence_checker)],
-    email: str,
+    email: Email,
 ) -> Optional[bool]:
     try:
-        return await uec.check_if_user_exists(email)
+        return await uec.check_if_user_exists(email.email)
     except:
         return
