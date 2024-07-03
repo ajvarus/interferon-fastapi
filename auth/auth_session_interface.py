@@ -6,6 +6,8 @@ from dependencies.key_manager import get_key_manager
 
 from models.types import SignUpCredentials, InterferonUser, UserSession
 
+from errors.types import SessionError
+
 from typing import Self
 
 
@@ -32,11 +34,14 @@ class AuthSessionInterface:
         try:
             user: InterferonUser = await cls._am.resolve(credentials)
             if not user.is_default():
-                user_session: UserSession = await cls._se.start_session(user)
-                if not user_session.is_default():
-                    return user_session
-        except Exception as e:
-            print(str(e))
+                try:
+                    user_session: UserSession = await cls._se.start_session(user)
+                    if not user_session.is_default():
+                        return user_session
+                except SessionError as e:
+                    return UserSession(user_id=user.user_id, error_info=e.to_dict())
+        except Exception:
+            pass
         return UserSession()
 
     @classmethod
@@ -107,3 +112,7 @@ class AuthSessionInterface:
                 return session
         except Exception as e:
             return UserSession()
+
+    @classmethod
+    async def force_logout_and_terminate_all_sessions(cls, user_id: str) -> bool:
+        return await cls._se.force_terminate_all_sessions(user_id)

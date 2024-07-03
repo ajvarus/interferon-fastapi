@@ -6,3 +6,4 @@ from .jwt_payload import JWTPayload
 from .auth_request import AuthRequest
 from .user_session import UserSession
 from .email import Email
+from .user_id import UserId

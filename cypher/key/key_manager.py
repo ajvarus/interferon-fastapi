@@ -13,15 +13,16 @@ from supabased.queries.auth import FetchUserKey
 
 from models.types import InterferonUser, UserSession
 
+
 class KeyManager:
     def __init__(
-            self, 
-            ik: InsertUserKey, 
-            fk: FetchUserKey,
-            r: Redis,
-            kg: KeyGenerator,
-            ee: EncryptionEngine
-            ) -> None:
+        self,
+        ik: InsertUserKey,
+        fk: FetchUserKey,
+        r: Redis,
+        kg: KeyGenerator,
+        ee: EncryptionEngine,
+    ) -> None:
         self._ik = ik
         self._fk = fk
         self._r = r
@@ -34,24 +35,34 @@ class KeyManager:
                 if user.is_new:
                     key = self._kg.generate_key()
                     encrypted_key = self._ee.encrypt_text(plaintext=key)
-                    is_inserted: bool = await self._ik.insert_user_key(user.user_id, encrypted_key)
+                    is_inserted: bool = await self._ik.insert_user_key(
+                        user.user_id, encrypted_key
+                    )
                     if is_inserted:
                         await self._r.set(f"{user.user_id}:master_key", encrypted_key)
                     else:
                         raise Exception()
                 elif user.is_new == False:
-                    master_key_exists: bool = (await self._r.exists(f"{user.user_id}:master_key")) > 0
+                    master_key_exists: bool = (
+                        await self._r.exists(f"{user.user_id}:master_key")
+                    ) > 0
                     if not master_key_exists:
                         row: dict = await self._fk.fetch_user_key(user.user_id)
                         if row:
                             encrypted_key: str = row.get("master_key", None)
                             if encrypted_key:
-                                await self._r.set(f"{user.user_id}:master_key", encrypted_key)
+                                await self._r.set(
+                                    f"{user.user_id}:master_key", encrypted_key
+                                )
             elif user.is_active == False:
-                master_key_exists: bool = True if await self._r.exists(f"{user.user_id}:master_key") else False
+                master_key_exists: bool = (
+                    True
+                    if await self._r.exists(f"{user.user_id}:master_key")
+                    else False
+                )
                 if master_key_exists:
                     await self._r.delete(f"{user.user_id}:master_key")
-            else: 
+            else:
                 raise Exception("Key management failure!")
         except Exception as e:
             print(str(e))
@@ -73,19 +84,22 @@ class KeyManager:
 
 
 # The below function is a wrapper for key-manager
-# used in AuthSessionInterface 
+# used in AuthSessionInterface
 from functools import wraps
 from typing import Any, Callable
+
 
 def manageuserkey(get_key_manager):
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def wrapper(*args, **kwargs) -> Any:
             session: UserSession = await func(*args, **kwargs)
-            if not session.is_default(): 
+            if not session.is_default() and session.error_info is None:
                 user: InterferonUser = session.to_user()
                 key_manager: KeyManager = await get_key_manager()
                 await key_manager.manage_key_for(user)
             return session
+
         return wrapper
+
     return decorator

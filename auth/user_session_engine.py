@@ -1,5 +1,7 @@
+# /auth/user_session_engine.py
+
 import os
-from typing import TypeVar, Type, List
+from typing import Optional, TypeVar, Type, List, cast
 
 from datetime import datetime, timezone, timedelta
 import jwt
@@ -13,7 +15,9 @@ from models.types import InterferonUser, JWTPayload, UserSession
 
 import redis
 from redis.asyncio import Redis
-from redised import RedisManager
+
+from errors.types import SessionError
+from errors.error_codes import SessionErrorCode as sec
 
 
 T = TypeVar("T", bound="UserSessionEngine")
@@ -32,11 +36,18 @@ class UserSessionEngine:
 
     @classmethod
     async def start_session(cls, user: InterferonUser) -> UserSession:
-        if await cls._valid_for_creation(user=user):
-            user_session = await cls._create_session(user=user)
-            if user_session.user_id and await cls._store_session(session=user_session):
-                return user_session
-        return UserSession()
+        try:
+            if await cls._valid_for_creation(user=user):
+                user_session = await cls._create_session(user=user)
+                if user_session.user_id and await cls._store_session(
+                    session=user_session
+                ):
+                    return user_session
+            return UserSession()
+        except SessionError as e:
+            raise e
+        except Exception as e:
+            return UserSession()
 
     @classmethod
     async def _store_session(cls, session: UserSession) -> bool:
@@ -78,8 +89,10 @@ class UserSessionEngine:
         is_default_user = user.model_dump() == InterferonUser().model_dump()
         has_user_id = user.user_id is not None
         # Below variable is used to allow only one active user session.
-        has_active_session = await cls._r.exists(user.user_id) > 0
+        has_active_session: bool = await cls._r.exists(user.user_id) > 0
 
+        if has_active_session:
+            raise SessionError(sec.SESSION_ALREADY_EXISTS)
         if not is_default_user and has_user_id and not has_active_session:
             return True
         return False
@@ -164,9 +177,6 @@ class UserSessionEngine:
                     )
                 else:
                     return UserSession()
-                # is_list_empty = await cls._r.llen(user_id) == 0
-                # if is_list_empty:
-                #     await cls._r.delete(user_id)
             else:
                 return UserSession()
         except redis.RedisError as e:
@@ -191,6 +201,31 @@ class UserSessionEngine:
         except (redis.exceptions.RedisError, Exception) as e:
             print(str(e))
             return UserSession()
+
+    @classmethod
+    # type: ignore
+    async def force_terminate_all_sessions(cls, user_id: str) -> bool:
+        try:
+            if not await cls._r.exists(user_id):  # type: ignore
+                return False
+
+            session_ids: List[bytes] = await cls._r.lrange(user_id, 0, -1)  # type: ignore
+
+            async with cls._r.pipeline(transaction=True) as pipe:
+                for session_id in session_ids:
+                    pipe.delete(session_id)
+                pipe.delete(user_id)
+                await pipe.execute()
+
+            # for session_id in session_ids:
+            #     _ = await cls._r.delete(session_id)
+
+            # _ = await cls._r.delete(user_id)
+            _ = await cls._cleanup_session(user_id)
+
+            return True
+        except Exception:
+            return False
 
     @classmethod
     def _validate_session(cls, exp: int) -> bool:
@@ -233,43 +268,5 @@ class UserSessionEngine:
                 deleted_session.supabase_token = session.supabase_token
                 deleted_session.intf_user = session.intf_user
                 return deleted_session
-                # session: UserSession = await cls._delete_session(user_id=payload.sub,
-                #                                              session_id=payload.ssn)
-            # if not session.is_default():
-            #     return session
             return session
         return session
-
-    # def refresh_session(self):
-    #     self.last_active = datetime.now(timezone.utc)
-    #     self.user.is_active = True
-    #     self.user.token = self.generate_jwt()
-
-
-# import asyncio
-# async def test_login():
-#     r: Redis = await RedisManager.get_client()
-#     session_engine: UserSessionEngine = UserSessionEngine(r=r)
-
-# user = InterferonUser(
-# user_id="11",
-# token=None,
-# supabase_token="234",
-# is_active=True,
-# last_active=None
-# )
-# user_session = await session_engine.start_session(user=user)
-# print("Finished")
-# print(user_session)
-
-# jwt: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImV4cCI6MTcxNjIyNTM4NywiaWF0IjoxNzE2MTM4OTg3LCJzc24iOiI1MTk4OTUyMS0yNDZhLTRiNzItYmU5YS00ZTk1ZWU3NDMwYmIifQ.MzY6nXGqG9CJyvak63XCxAK9Wh81x7ZbsTnE6Nxv-yo"
-# user_session = await session_engine.verify_and_retrieve_session(token=jwt)
-# print("Verified")
-# print(user_session)
-
-#     jwt: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMSIsImV4cCI6MTcxNjIyNTM4NywiaWF0IjoxNzE2MTM4OTg3LCJzc24iOiI1MTk4OTUyMS0yNDZhLTRiNzItYmU5YS00ZTk1ZWU3NDMwYmIifQ.MzY6nXGqG9CJyvak63XCxAK9Wh81x7ZbsTnE6Nxv-yo"
-#     user_session = await session_engine.terminate_session(token=jwt)
-#     print("Terminated")
-#     print(user_session)
-
-# asyncio.run(test_login())

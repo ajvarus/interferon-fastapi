@@ -12,9 +12,9 @@ from .redis import get_redis_client
 
 
 async def get_key_manager(
-        user_key_inserter: InsertUserKey = Depends(get_insert_user_key),
-        user_key_fetcher: FetchUserKey = Depends(get_fetch_user_key),
-        r: Redis = Depends(get_redis_client)
+    user_key_inserter: InsertUserKey = Depends(get_insert_user_key),
+    user_key_fetcher: FetchUserKey = Depends(get_fetch_user_key),
+    r: Redis = Depends(get_redis_client),
 ) -> KeyManager:
     if not isinstance(user_key_inserter, InsertUserKey):
         user_key_inserter = await get_insert_user_key()
@@ -29,12 +29,5 @@ async def get_key_manager(
         fk=user_key_fetcher,
         kg=key_generator,
         ee=encryption_engine,
-        r=r
+        r=r,
     )
-
-# async def get_depends_key_manager(
-#     ik: InsertUserKey = Depends(get_insert_user_key),
-#     fk: FetchUserKey = Depends(get_fetch_user_key),
-#     r: Redis = Depends(get_redis_client)
-# ) -> KeyManager:
-#     return await get_key_manager(ik, fk, r)

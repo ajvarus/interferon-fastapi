@@ -1,11 +1,10 @@
 # /routers/auth/auth.py
 
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import EmailStr
 
 from models.enums import AuthType
-from models.types import AuthRequest, SignUpCredentials, UserSession, Email
+from models.types import AuthRequest, SignUpCredentials, UserSession, Email, UserId
 
 from dependencies.auth_session_interface import get_auth_session_interface
 from dependencies.supabase_auth import get_user_existence_checker
@@ -22,16 +21,16 @@ bearer_scheme: HTTPBearer = HTTPBearer()
 @router.post("/")
 async def auth(
     ar: AuthRequest,
-    request: Request,
     asi: AuthSessionInterface = Depends(get_auth_session_interface),
 ) -> UserSession:
-    # Handle Signup
     try:
         if ar.auth_type == AuthType.RESOLVE:
             credentials: SignUpCredentials = SignUpCredentials(
                 email=ar.email, password=ar.password
             )
             session: UserSession = await asi.resolve_and_start_session(credentials)
+            if session.error_info is not None:
+                return session
             if not session.is_default() and session.is_active:
                 return session
             elif not session.is_default() and session.is_active == False:
@@ -93,3 +92,11 @@ async def exists(
         return await uec.check_if_user_exists(email.email)
     except:
         return
+
+
+@router.post("/terminate-all-sessions")
+async def terminate_all_sessions(
+    asi: Annotated[AuthSessionInterface, Depends(get_auth_session_interface)],
+    user_id: UserId,
+) -> bool:
+    return await asi.force_logout_and_terminate_all_sessions(user_id.user_id)
