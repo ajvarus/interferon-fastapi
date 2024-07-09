@@ -25,7 +25,7 @@ class PasswordResponse:
     username: str
     encrypted_password: str
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, int | str]:
         return {
             "id": self.id,
             "password_name": self.password_name,
@@ -36,6 +36,7 @@ class PasswordResponse:
 @strawberry.type
 class PasswordFetchResponse:
     id: strawberry.ID
+    group_id: strawberry.ID
     password_name: str
     username: str
     decrypted_password: str

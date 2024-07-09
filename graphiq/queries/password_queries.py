@@ -10,7 +10,7 @@ from graphiq.types import PasswordFetchResponse, PasswordCacheResponse
 
 from features import PasswordEncryptor
 
-from typing import List, Dict
+from typing import List
 
 from models.enums import OpType
 
@@ -30,6 +30,7 @@ class Query:
                         edges {
                             node {
                                 id
+                                group_id
                                 password_name
                                 username
                                 encrypted_password

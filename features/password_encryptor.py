@@ -10,6 +10,7 @@ from graphiq.types import (
 )
 
 from typing import Dict, List
+from strawberry import ID
 
 from redis import Redis
 
@@ -58,10 +59,10 @@ class PasswordEncryptor:
 
     async def decrypt_passwords(
         self, passwords: List[Dict[str, str]]
-    ) -> List[Dict[str, str]]:
+    ) -> List[PasswordFetchResponse]:
         if self.encryptor is None:
             await self._initialise()
-        decrypted_passwords: List[Dict[str, str]] = []
+        decrypted_passwords: List[PasswordFetchResponse] = []
         if passwords:
             for p in passwords:
                 decrypted_password: str = self.encryptor.decrypt_text(
@@ -70,6 +71,7 @@ class PasswordEncryptor:
                 decrypted_passwords.append(
                     PasswordFetchResponse(
                         id=p.get("id"),
+                        group_id=ID(p.get("group_id", "")),
                         password_name=p.get("password_name"),
                         username=p.get("username"),
                         decrypted_password=decrypted_password,
