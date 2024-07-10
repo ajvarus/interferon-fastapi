@@ -1,6 +1,7 @@
 # /graphiq/mutations/password_delete_mutation.py
 
 import strawberry
+from strawberry import ID
 
 from fastapi import HTTPException
 
@@ -71,6 +72,7 @@ class Mutation:
                     return [
                         PasswordResponse(
                             id=p.get("id"),
+                            group_id=ID(""),
                             password_name=p.get("password_name"),
                             username="",
                             encrypted_password="",
