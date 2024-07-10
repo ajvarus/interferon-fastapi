@@ -21,6 +21,7 @@ class PasswordRequest:
 @strawberry.type
 class PasswordResponse:
     id: strawberry.ID
+    group_id: strawberry.ID
     password_name: str
     username: str
     encrypted_password: str

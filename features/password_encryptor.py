@@ -86,9 +86,11 @@ class PasswordEncryptor:
             decrypted_password: str = self.encryptor.decrypt_text(password)
         return decrypted_password
 
-    async def cache_passwords(self, passwords: List[Dict], op_type: OpType) -> bool:
+    async def cache_passwords(
+        self, passwords: List[Dict[str, str]], op_type: OpType
+    ) -> bool:
         redis_key: str = f"{self.user_id}:passwords"
-        cache_exists = await self.r.exists(redis_key) == 1
+        cache_exists: bool = await self.r.exists(redis_key) == 1
 
         if op_type == OpType.ADD:
             is_added: bool = await self.add_to_cache(passwords, redis_key)
@@ -113,7 +115,7 @@ class PasswordEncryptor:
         else:
             return False
 
-    async def add_to_cache(self, passwords: List[Dict], key: str) -> bool:
+    async def add_to_cache(self, passwords: List[Dict[str, str]], key: str) -> bool:
         try:
             existing_passwords = await self.r.hkeys(key)
             new_passwords = []

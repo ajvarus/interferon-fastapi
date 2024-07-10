@@ -5,6 +5,7 @@ from supabase._async.client import AsyncClient as Client
 from supabase.client import PostgrestAPIResponse as APIResponse
 
 import strawberry
+from strawberry import ID
 
 from graphiq.types import PasswordInput, PasswordRequest, PasswordResponse
 
@@ -34,6 +35,7 @@ class Mutation:
                 insertIntopasswordsCollection(objects: $objects) {
                         records {
                             id
+                            group_id
                             password_name
                             username
                             encrypted_password
@@ -72,6 +74,7 @@ class Mutation:
                         return [
                             PasswordResponse(
                                 id=p.get("id"),
+                                group_id=ID(p.get("group_id", "")),
                                 password_name=p.get("password_name"),
                                 username=p.get("username"),
                                 encrypted_password=p.get("encrypted_password"),
