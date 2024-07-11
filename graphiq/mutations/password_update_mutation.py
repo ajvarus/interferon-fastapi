@@ -37,6 +37,7 @@ class Mutation:
             encrypted_password = await encryptor.encrypt_single_password(p.password)
             set_object = {
                 "password_name": p.password_name,
+                "username": p.username,
                 "encrypted_password": encrypted_password,
             }
             filter_object = {"id": {"eq": int(p.id)}, "user_id": {"eq": user_id}}

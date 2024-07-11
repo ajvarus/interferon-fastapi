@@ -53,6 +53,7 @@ class PasswordCacheResponse:
 class PasswordUpdateInput:
     id: strawberry.ID
     password_name: str
+    username: str
     password: str
 
 
