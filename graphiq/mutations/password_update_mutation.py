@@ -48,6 +48,8 @@ class Mutation:
                     ) {
                         records {
                             id
+                            group_id
+                            username
                             password_name
                             encrypted_password
                         }
@@ -71,7 +73,9 @@ class Mutation:
                             [
                                 PasswordResponse(
                                     id=record.get("id"),
+                                    group_id=record.get("group_id"),
                                     password_name=record.get("password_name"),
+                                    username=record.get("username"),
                                     encrypted_password=record.get("encrypted_password"),
                                 )
                                 for record in updated_records
